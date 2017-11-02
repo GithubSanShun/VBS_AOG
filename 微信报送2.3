@@ -1,0 +1,247 @@
+Public Sub Main()
+
+    Dim Rng As Range
+    Dim createTimeCol, numSRCol, statusSRCol, closeTimeCol, reqAnsTimeCol, ansTimeCol, titleSRCol,chapterSRCol, visitTimeCol  As Integer
+    Dim maxRow, i As Integer
+    Dim startDate As Date
+    Dim strG As String
+	  Dim YBSRday, YBSRall as integer
+	
+	YBSRday = InputBox("请输入本日新增一般咨询数", "导入一般咨询")
+    YBSRall = InputBox("请输入航线运营起新增一般咨询数", "导入一般咨询")
+    
+    maxRow = Worksheets(1).UsedRange.Rows.Count
+    '获得总行数
+    startDate = #11/29/2015# '交付起始日期
+    Set Rng = Worksheets(1).Range("1:1").Find("服务请求编号", LookIn:=xlValues, lookat:=xlWhole)
+    numSRCol = Rng.Column
+    '获得“服务请求编号”的列号
+    Set Rng = Worksheets(1).Range("1:1").Find("创建时间", LookIn:=xlValues, lookat:=xlWhole)
+    createTimeCol = Rng.Column
+    '获得“创建时间”的列号
+    Set Rng = Worksheets(1).Range("1:1").Find("状态", LookIn:=xlValues, lookat:=xlWhole)
+    statusSRCol = Rng.Column
+    '获得“状态”的列号
+    Set Rng = Worksheets(1).Range("1:1").Find("要求答复时间", LookIn:=xlValues, lookat:=xlWhole)
+    reqAnsTimeCol = Rng.Column
+    '获得“要求答复时间”的列号
+    Set Rng = Worksheets(1).Range("1:1").Find("标题", LookIn:=xlValues, lookat:=xlWhole)
+    titleSRCol = Rng.Column
+    '获得“标题”的列号
+    Set Rng = Worksheets(1).Range("1:1").Find("发布完成时间", LookIn:=xlValues, lookat:=xlWhole)
+    ansTimeCol = Rng.Column
+    '获得“发布完成时间”的列号
+     Set Rng = Worksheets(1).Range("1:1").Find("关闭分配时间", LookIn:=xlValues, lookat:=xlWhole)
+    closeTimeCol = Rng.Column
+    '获得“关闭分配时间”的列号
+    Set Rng = Worksheets(1).Range("1:1").Find("章节号", LookIn:=xlValues, lookat:=xlWhole)
+    chapterSRCol = Rng.Column
+    '获得“章节号”的列号
+	Set Rng = Worksheets(1).Range("1:1").Find("回访完成时间", LookIn:=xlValues, lookat:=xlWhole)
+    visitTimeCol = Rng.Column
+    '获得“回访完成时间”的列号
+   
+    On Error Resume Next
+    Worksheets.Add(after:=Worksheets(Worksheets.Count)).Name = "SR时间定位"
+    '创建新的表单
+    Worksheets(2).Cells(1, 1).Value="SR编号"
+    Worksheets(2).Cells(1, 2).Value="SR创建时间"
+    Worksheets(2).Cells(1, 3).Value="SR答复时间"
+    Worksheets(2).Cells(1, 4).Value="SR关闭时间"
+    Worksheets(2).Cells(1, 5).Value="SR要求答复时间"
+	Worksheets(2).Cells(1, 6).Value="SR回访完成时间"
+    For i = 2 To maxRow
+	Worksheets(2).Cells(i, 1).Value=Worksheets(1).Cells(i, numSRCol).Value
+        If Worksheets(1).Cells(i, createTimeCol).Value <> "" Then
+            strG = Worksheets(1).Cells(i, createTimeCol).Value
+			Worksheets(2).Cells(i, 2).Value=format(right(strG,11),tt)
+			Worksheets(1).Cells(i, createTimeCol).Value = Left(strG, Len(strG) - 12)
+        End If
+         '创建时间内容格式化
+        If Worksheets(1).Cells(i, reqAnsTimeCol).Value <> "" Then
+            strG = Worksheets(1).Cells(i, reqAnsTimeCol).Value   
+            Worksheets(2).Cells(i, 5).Value=format(right(strG,11),tt)      
+            Worksheets(1).Cells(i, reqAnsTimeCol).Value = Left(strG, Len(strG) - 12)
+        End If
+         '要求答复时间内容格式化
+         If Worksheets(1).Cells(i, ansTimeCol).Value <> "" Then
+            strG = Worksheets(1).Cells(i, ansTimeCol).Value
+            Worksheets(2).Cells(i, 3).Value=format(right(strG,11),tt)
+            Worksheets(1).Cells(i, ansTimeCol).Value = Left(strG, Len(strG) - 12)
+        End If
+        '发布完成时间内容格式化
+         If Worksheets(1).Cells(i, closeTimeCol).Value <> "" Then
+            strG = Worksheets(1).Cells(i, closeTimeCol).Value
+            Worksheets(2).Cells(i, 4).Value=format(right(strG,11),tt)
+            Worksheets(1).Cells(i, closeTimeCol).Value = Left(strG, Len(strG) - 12)
+        End If
+        '关闭分配时间内容格式化
+		if Worksheets(1).Cells(i, visitTimeCol).Value <> "" Then
+            strG = Worksheets(1).Cells(i, visitTimeCol).Value
+            Worksheets(2).Cells(i, 6).Value=format(right(strG,11),tt)
+            Worksheets(1).Cells(i, visitTimeCol).Value = Left(strG, Len(strG) - 12)
+		end if
+    Next i
+    
+    Debug.Print createTimeCol, numSRCol, statusSRCol, closeTimeCol, reqAnsTimeCol, ansTimeCol, titleSRCol, chapterSRCol, visitTimeCol 
+    Debug.Print "数据预处理完成！"
+    'For i = 2 To maxRow
+     'If DateDiff("d", startDate, CDate(Worksheets(1).Cells(i, createTimeCol).Value)) < 0 Then
+            'Worksheets(1).Rows(i).Delete
+     'End If
+    'Next
+    '删除交付日期之前的数据行
+    
+    Dim countNum As Integer, allNum, ansNum As Integer, allAnsNum, closeNum As Integer, allCloseNum As Integer
+    Dim overAnsTimeNum, nearOverTimeNum, normalNum , noveransNum As Integer
+    Dim strNewSR, strPartOne, strOverTime, strPartTwo, strNearOver, strReport As String
+    Dim strReportOne, strReportTwo, strReportThree, strReportFour As String
+    Dim SRdate As Date
+    Dim SRtime As Date
+	Dim AlSRNum, ExpSRNum,OverAlSRNum,OverExpSRNum as integer 
+	countNum=0
+	AlSRNum=0
+	ExpSRNum=0
+	OverAlSRNum=0
+	OverExpSRNum=0
+	ansNum=0
+	closeNum=0
+	overAnsTimeNum=0
+	nearOverTimeNum=0
+	normalNum=0
+	noveransNum=0
+    startDate = #6/27/2016# '航线运营起始日期
+    
+    'Sheets.Add After:=Sheets(Sheets.Count)
+    For i = 2 To maxRow
+        SRdate = Worksheets(1).Cells(i, ansTimeCol).Value
+        SRtime = Worksheets(2).Cells(i, 3).Value
+        If Worksheets(1).Cells(i, statusSRCol).Value = "Pending Visit" And _
+        ((SRdate = Date And SRtime <= #9:00:00 PM#) Or (SRdate = Date - 1 And SRtime >= #9:00:00 PM#)) Then
+        '以每天晚上9:00为统计节点
+            ansNum = ansNum + 1
+        End If
+        If Not Worksheets(1).Cells(i, statusSRCol).Value = "Pending Response" And _
+			Worksheets(1).Cells(i, statusSRCol).Value <> "Invalid" And _
+            DateDiff("d", startDate, CDate(Worksheets(1).Cells(i, createTimeCol).Value)) > 0 Then
+            allAnsNum = allAnsNum + 1
+        End If
+        '今日答复数量与总答复数量
+        SRdate = Worksheets(1).Cells(i, closeTimeCol).Value
+        SRtime = Worksheets(2).Cells(i, 4).Value
+        If Worksheets(1).Cells(i, statusSRCol).Value = "Closed" And ((SRdate = Date And _
+        SRtime <= #9:00:00 PM#) Or (SRdate = Date - 1 And SRtime >= #9:00:00 PM#)) Then
+        '以每天晚上9:00为统计节点
+            closeNum = closeNum + 1
+        End If
+        If Worksheets(1).Cells(i, statusSRCol).Value = "Closed" And _
+            DateDiff("d", startDate, CDate(Worksheets(1).Cells(i, createTimeCol).Value)) > 0 Then
+            allCloseNum = allCloseNum + 1
+        End If
+        '今日关闭数量与总关闭数量
+		
+		if DateDiff("d", CDate(Worksheets(1).Cells(i, reqAnsTimeCol).Value), Date) < 0 And _
+			Worksheets(1).Cells(i, statusSRCol).Value = "Pending Response" And _
+            DateDiff("d", startDate, CDate(Worksheets(1).Cells(i, createTimeCol).Value)) > 0 Then
+			noveransNum=noveransNum+1
+		end if
+        If DateDiff("d", CDate(Worksheets(1).Cells(i, reqAnsTimeCol).Value), Date) >= 0 And _
+            Worksheets(1).Cells(i, statusSRCol).Value = "Pending Response" And _
+            DateDiff("d", startDate, CDate(Worksheets(1).Cells(i, createTimeCol).Value)) > 0 Then
+            overAnsTimeNum = overAnsTimeNum + 1
+			If instr(Worksheets(1).Cells(i, titleSRCol).Value,"STZ") >0 then 
+				OverExpSRNum=OverExpSRNum+1
+			else
+				OverAlSRNum=OverAlSRNum+1
+			End if
+            strOverTime = strOverTime & Chr(overAnsTimeNum + 96) & "、" & Worksheets(1).Cells(i, numSRCol).Value & "-" & Worksheets(1).Cells(i, titleSRCol).Value _
+                & ",要求答复时间：" & Format(CDate(Worksheets(1).Cells(i, reqAnsTimeCol).Value), "yyyy") & "年" _
+                & Format(CDate(Worksheets(1).Cells(i, reqAnsTimeCol).Value), "mm") & "月" & Format(CDate(Worksheets(1).Cells(i, reqAnsTimeCol).Value), "dd") _
+                & "日" & "；" & vbNewLine
+            'Debug.Print strOverTime
+            
+        End If
+        
+        If (CDate(Worksheets(1).Cells(i, reqAnsTimeCol).Value) = Date + 1 Or CDate(Worksheets(1).Cells(i, reqAnsTimeCol).Value) = Date + 2) And _
+            Worksheets(1).Cells(i, statusSRCol).Value = "Pending Response" And _
+            DateDiff("d", startDate, CDate(Worksheets(1).Cells(i, createTimeCol).Value)) > 0 Then
+            nearOverTimeNum = nearOverTimeNum + 1
+            strNearOver = strNearOver & Chr(nearOverTimeNum + 96) & "、" & Worksheets(1).Cells(i, numSRCol).Value & "-" & Worksheets(1).Cells(i, titleSRCol).Value _
+                & ",要求答复时间：" & Format(CDate(Worksheets(1).Cells(i, reqAnsTimeCol).Value), "yyyy年m月d日") & "；" & vbNewLine
+            'Debug.Print strNearOver
+        End If
+        
+        If DateDiff("d", startDate, CDate(Worksheets(1).Cells(i, createTimeCol).Value)) > 0 and _
+			Worksheets(1).Cells(i, statusSRCol).Value <> "Invalid" Then
+            allNum = allNum + 1
+        End If
+		'排除“失效”类的SR
+
+        SRdate = Worksheets(1).Cells(i, createTimeCol).Value
+        SRtime = Worksheets(2).Cells(i, 2).Value
+        If (SRdate = Date And SRtime <= #9:00:00 PM#) Or (SRdate = Date - 1 And SRtime >= #9:00:00 PM#) Then
+        '以晚上9:00为统计节点
+            countNum = countNum + 1
+			If instr(Worksheets(1).Cells(i, titleSRCol).Value,"STZ") >0 then 
+				ExpSRNum=ExpSRNum+1
+			else
+				AlSRNum=AlSRNum+1
+				strNewSR = strNewSR & countNum & "）" & Worksheets(1).Cells(i, numSRCol).Value & "-" & Worksheets(1).Cells(i, titleSRCol).Value _
+                & ",要求答复时间：" & Format(CDate(Worksheets(1).Cells(i, reqAnsTimeCol).Value), "yyyy年m月d日") _
+                & "；" & vbNewLine
+			End if
+        End If
+        '今日创建的SR统计，包括航线运营部分和试飞机特检部分
+    Next
+	
+	allNum=allNum+ YBSRall
+	countNum=countNum+ YBSRday
+	allCloseNum=allCloseNum+ YBSRall
+	allAnsNum=allAnsNum+ YBSRall
+	ansNum=ansNum+YBSRday
+	closeNum=closeNum+YBSRday
+    normalNum = allNum - allCloseNum - overAnsTimeNum
+    strPartOne = "一、今日客户请求处理情况（截止到21:00）：" & vbNewLine & "1、今日新增客户请求" _
+        & countNum & "条(自2016年6月28日航线运营至今累计" & allNum & "条）" & vbNewLine & "a、航线运营请求" & AlSRNum & "条" _
+        & strNewSR & "b、试飞机客户请求" & ExpSRNum & "条" &  vbNewLine & "2、今日答复客户请求" & ansNum & "条（航线运营至今累计答复" & allAnsNum & "条）" & vbNewLine _
+        & "3、今日关闭客户请求" & closeNum & "条（航线运营至今累计关闭" & allCloseNum & "条）"
+    strPartTwo = "二、任务跟踪情况：" & vbNewLine & "1、红色警报：超时未答复" & overAnsTimeNum & "条" & "（航线运营" & OverAlSRNum & "条，试飞机" & OverExpSRNum & "条）" _
+		& vbNewLine & "其中主责部门为：" & vbNewLine & "技术出版物X条" & vbNewLine & "维修工程部X条" & vbNewLine & "快响中心X条" & vbNewLine & "研发X条" & vbNewLine _
+		& "2、黄色预警：未来两日将有" & nearOverTimeNum & "条服务请求超时 " & vbNewLine & "3、正常处理中：" & normalNum & "条" & vbNewLine & "a、未超时未答复"&  noveransNum & _
+		"条" & vbNewLine & "b、已答复"& normalNum-noveransNum &"条" & vbNewLine & "[客服快响中心 " & Format(Date, "yyyy年m月d日") & " 21时10分]"
+ 
+    strReportOne = "今日(截止到17:00)新增客户请求" & countNum & "条" & vbNewLine & strNewSR & "[客服快响中心 " & Format(Date, "yyyy年m月d日") & " 17时10分]" & vbNewLine & _
+    "=====================================================" & vbNewLine
+    
+    strReportTwo = strPartOne & vbNewLine & strPartTwo & vbNewLine & "=====================================================" & vbNewLine
+    
+    strReportThree = "今日客户请求处理情况（截止到21:00）：" & vbNewLine & "1、今日新增客户请求" _
+        & countNum & "条(自2016年6月28日航线运营至今累计" & allNum & "条）" & vbNewLine _
+        & strNewSR & "2、今日答复客户请求" & ansNum & "条（航线运营至今累计答复" & allAnsNum & "条）" & vbNewLine _
+        & "3、今日关闭客户请求" & closeNum & "条（航线运营至今累计关闭" & allCloseNum & "条）" & vbNewLine & "[客服快响中心 " & Format(Date, "yyyy年m月d日") & " 21时10分]" & vbNewLine & _
+    "=====================================================" & vbNewLine
+    
+    strReport = strReportOne & strReportTwo & strReportThree 
+    
+    Dim gPath As String
+    Dim sFile As Object, fSo As Object
+    
+    gPath = Application.ActiveWorkbook.Path & "\微信报送" & Format(Date, "yyyy-m-d") & ".txt"
+    'Debug.Print gPath
+    Open gPath For Output As #1
+    Print #1, strReport
+    Close #1
+    
+    Debug.Print strReportOne
+    Debug.Print strReportTwo
+    Debug.Print strReportThree
+    Debug.Print strReportFour
+    Debug.Print "报送完成！！！！"
+   
+    'Debug.Print strNearOver
+    'Debug.Print strPartTwo
+    'Debug.Print ansNum, allAnsNum
+    'Debug.Print closeNum, allCloseNum, normalNum
+End Sub
+
+
